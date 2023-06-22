@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using DevFreela.Core;
 using Microsoft.Extensions.Configuration;
@@ -18,35 +19,49 @@ namespace DevFreela.Infrastructure
             _configuration = configuration;
         }
 
+        public string ComputeSha256Hash(string password)
+        {
+            using(SHA256 sha256Hash = SHA256.Create())
+            {
+                //ComputerHash - > retorna um array de bytes
+                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+                //Convertendo o array de bytes para string
+                StringBuilder builder = new StringBuilder();
+                foreach(byte b in bytes)
+                {
+                    builder.Append(b.ToString("x2")); //x2 -> faz com que seja convertido em representação hexadecimal
+                }
+                return builder.ToString();
+            }
+        }
 
         public string GenerateJwtToken(string email, string role)
         {
-            var key = _configuration["Jwt:Key"];
-            var Issuer = _configuration["Jwt:Issuer"];
-            var Audience = _configuration["Jwt:Audience"];
+            var issuer = _configuration["Jwt:Issuer"];
+            var audience = _configuration["Jwt:Audience"];
 
-            var securityKey =  new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>
             {
-                new Claim("UserName", email),
-                new Claim(ClaimTypes.Role,role)
+                new Claim("userName", email),
+                new Claim(ClaimTypes.Role, role)
             };
 
             var token = new JwtSecurityToken(
-                issuer: Issuer,
-                audience: Audience,
-                expires: DateTime.Now.AddHours(8),
-                signingCredentials:credentials,
-                claims:claims
-            );
+                issuer: issuer,
+                audience: audience,
+                expires: DateTime.Now.AddMinutes(120),
+                signingCredentials: credentials,
+                claims: claims);
 
             var tokenHandler = new JwtSecurityTokenHandler();
+
             var stringToken = tokenHandler.WriteToken(token);
 
             return stringToken;
-
         }
     }
 }

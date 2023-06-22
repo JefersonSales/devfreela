@@ -1,13 +1,6 @@
-﻿using DevFreela.API.Models;
-using DevFreela.Application.Commands.CreateProject;
-using DevFreela.Application.InputModels;
-using DevFreela.Infrastructure.Persistence;
+﻿using DevFreela.Application.Commands.CreateProject;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using DevFreela.Application.Commands.DeleteProjectCommand;
 using DevFreela.Application.Commands.FinishProject;
@@ -17,7 +10,7 @@ using DevFreela.Application.Queries.GetAllprojects;
 using DevFreela.Application.Queries.GetProjectById;
 
 namespace DevFreela.API.Controllers
-{ 
+{
     [Route("api/projects")]
     public class ProjectsController : ControllerBase
     {
